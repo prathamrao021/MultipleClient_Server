@@ -2,13 +2,18 @@ import socket
 import sys
 import threading
 import os
-
+counter_clients = 0
 def handle_client(server_socket,client_socket,client_address):
+    global counter_clients
+    counter_clients += 1
     print(f"Connection established with {client_address}")
     try:
         while True:
             command = client_socket.recv(1024).decode()
             if command.startswith('exit'):
+                counter_clients -= 1
+                if counter_clients == 0:
+                    server_socket.close()
                 break
             elif command.startswith('get'):
                 _, filename = command.split()
@@ -25,6 +30,7 @@ def handle_client(server_socket,client_socket,client_address):
     finally:
         # server_socket.close()
         client_socket.close()
+        
         print(f"Connection closed with {client_address}")
 
 def send_file_content(client_socket, filename):
@@ -50,11 +56,13 @@ def server():
         print("Server is running on port "+str(5160))
         
         while True:
-            server_socket.listen(1) 
-            client_socket, client_address = server_socket.accept()
-            client_thread = threading.Thread(target=handle_client, args=(server_socket,client_socket,client_address))
-            client_thread.start()
-            
+            try:
+                server_socket.listen(1)
+                client_socket, client_address = server_socket.accept()
+                client_thread = threading.Thread(target=handle_client, args=(server_socket,client_socket,client_address))
+                client_thread.start()
+            except:
+                break
             
 
 if __name__ == "__main__":
