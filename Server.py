@@ -8,9 +8,7 @@ def handle_client(server_socket,client_socket,client_address):
     try:
         while True:
             command = client_socket.recv(1024).decode()
-            if not command:
-                break 
-            if command == 'exit':
+            if command.startswith('exit'):
                 break
             elif command.startswith('get'):
                 _, filename = command.split()
@@ -25,7 +23,7 @@ def handle_client(server_socket,client_socket,client_address):
                 receive_file_content(client_socket, 'new' + filename)
                 print("File received successfully.")
     finally:
-        server_socket.close()
+        # server_socket.close()
         client_socket.close()
         print(f"Connection closed with {client_address}")
 
